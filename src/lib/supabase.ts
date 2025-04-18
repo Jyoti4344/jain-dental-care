@@ -15,7 +15,40 @@ if (!url || !key) {
   console.error('Missing Supabase credentials. Make sure VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY are set.');
 }
 
-export const supabaseClient = createClient<Database>(
-  url,
-  key
-);
+// Create a dummy client or actual client based on credentials availability
+export const supabaseClient = url && key 
+  ? createClient<Database>(url, key)
+  : {
+      from: () => ({
+        select: () => ({
+          eq: () => ({
+            order: () => ({
+              data: [],
+              error: new Error('Supabase not configured'),
+            }),
+          }),
+          order: () => ({
+            data: [],
+            error: new Error('Supabase not configured'),
+          }),
+        }),
+        insert: () => ({ 
+          data: null, 
+          error: new Error('Supabase not configured') 
+        }),
+        update: () => ({ 
+          data: null, 
+          error: new Error('Supabase not configured') 
+        }),
+        delete: () => ({ 
+          data: null, 
+          error: new Error('Supabase not configured') 
+        }),
+      }),
+      auth: {
+        getSession: async () => ({ 
+          data: { session: null }, 
+          error: null 
+        }),
+      },
+    } as unknown as ReturnType<typeof createClient<Database>>;
