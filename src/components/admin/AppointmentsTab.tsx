@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { supabaseClient } from "@/lib/supabase";
@@ -37,7 +36,7 @@ import { format, parseISO } from "date-fns";
 import { useToast } from "@/hooks/use-toast";
 
 // Define type for appointment data
-type AppointmentWithRelations = {
+interface AppointmentWithRelations {
   id: string;
   appointment_date: string;
   appointment_time: string;
@@ -53,7 +52,7 @@ type AppointmentWithRelations = {
     name: string;
     duration: number;
   };
-};
+}
 
 const AppointmentsTab = () => {
   const { toast } = useToast();
@@ -72,8 +71,8 @@ const AppointmentsTab = () => {
           appointment_time,
           status,
           notes,
-          patients!inner(first_name, last_name, email, phone),
-          services!inner(name, duration)
+          patients:patient_id(first_name, last_name, email, phone),
+          services:service_id(name, duration)
         `)
         .order("appointment_date", { ascending: true });
 
@@ -81,7 +80,15 @@ const AppointmentsTab = () => {
         throw error;
       }
 
-      return (data || []) as AppointmentWithRelations[];
+      return (data || []).map((item: any) => ({
+        id: item.id,
+        appointment_date: item.appointment_date,
+        appointment_time: item.appointment_time,
+        status: item.status,
+        notes: item.notes,
+        patients: item.patients[0],
+        services: item.services[0],
+      })) as AppointmentWithRelations[];
     },
   });
 
@@ -120,7 +127,6 @@ const AppointmentsTab = () => {
     setIsDeleteDialogOpen(true);
   };
 
-  // Filter appointments based on search query
   const filteredAppointments = appointments?.filter((appointment) => {
     const patientName = `${appointment.patients.first_name} ${appointment.patients.last_name}`.toLowerCase();
     const serviceName = appointment.services.name.toLowerCase() || "";

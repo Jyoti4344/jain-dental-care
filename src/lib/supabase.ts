@@ -6,9 +6,9 @@ import { Database } from '@/types/supabase';
 const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
 const supabaseKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
 
-// Check if the environment variables are defined, otherwise use fallback for development
-const url = supabaseUrl || process.env.VITE_SUPABASE_URL || '';
-const key = supabaseKey || process.env.VITE_SUPABASE_ANON_KEY || '';
+// Use empty strings as fallback values if environment variables are not defined
+const url = supabaseUrl || '';
+const key = supabaseKey || '';
 
 // Validate that we have the required values before creating the client
 if (!url || !key) {
