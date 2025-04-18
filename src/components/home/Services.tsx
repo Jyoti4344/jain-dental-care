@@ -1,12 +1,11 @@
-
 import { Link } from "react-router-dom";
-import { Tooth, Smile, AlarmClock, Stethoscope, Baby, Heart } from "lucide-react";
+import { Stethoscope, Smile, AlarmClock, Baby, Heart } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 
 const servicesData = [
   {
-    icon: <Tooth className="service-icon" />,
+    icon: <Stethoscope className="service-icon" />,
     title: "General Dentistry",
     description: "Comprehensive care for your dental health including cleanings, fillings, and preventative care."
   },

@@ -1,13 +1,12 @@
-
 import Navbar from "@/components/layout/Navbar";
 import Footer from "@/components/layout/Footer";
 import PageHeader from "@/components/common/PageHeader";
 import CTASection from "@/components/home/CTASection";
-import { Tooth, Smile, AlarmClock, Stethoscope, Baby, Heart, PenTool, Droplet, UserPlus } from "lucide-react";
+import { Stethoscope, Smile, AlarmClock, Baby, Heart, PenTool, Droplet, UserPlus } from "lucide-react";
 
 const servicesData = [
   {
-    icon: <Tooth className="w-12 h-12 text-tulip-dark-blue mb-4" />,
+    icon: <Stethoscope className="w-12 h-12 text-tulip-dark-blue mb-4" />,
     title: "General Dentistry",
     description: "Our comprehensive general dentistry services focus on prevention, diagnosis, and treatment of various dental issues to maintain your oral health.",
     treatments: [
