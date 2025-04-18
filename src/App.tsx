@@ -12,6 +12,8 @@ import Contact from "./pages/Contact";
 import Blog from "./pages/Blog";
 import AdminDashboard from "./pages/AdminDashboard";
 import NotFound from "./pages/NotFound";
+// Add the new import
+import AdminLogin from "./components/admin/AdminLogin";
 
 const queryClient = new QueryClient();
 
@@ -29,6 +31,8 @@ const App = () => (
           <Route path="/contact" element={<Contact />} />
           <Route path="/blog" element={<Blog />} />
           <Route path="/admin" element={<AdminDashboard />} />
+          {/* Add the new admin login route */}
+          <Route path="/admin/login" element={<AdminLogin />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
       </BrowserRouter>

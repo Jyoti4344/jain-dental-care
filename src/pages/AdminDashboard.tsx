@@ -1,5 +1,5 @@
-
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import Navbar from "@/components/layout/Navbar";
 import Footer from "@/components/layout/Footer";
 import PageHeader from "@/components/common/PageHeader";
@@ -11,9 +11,11 @@ import { Alert, AlertDescription } from "@/components/ui/alert";
 import { useQuery } from "@tanstack/react-query";
 import { supabaseClient } from "@/lib/supabase";
 import { Loader } from "lucide-react";
+import { useEffect } from "react";
 
 const AdminDashboard = () => {
   const [activeTab, setActiveTab] = useState("appointments");
+  const navigate = useNavigate();
   
   const { data: session, isLoading } = useQuery({
     queryKey: ["session"],
@@ -22,6 +24,13 @@ const AdminDashboard = () => {
       return data.session;
     },
   });
+
+  useEffect(() => {
+    // If no session, redirect to admin login
+    if (!isLoading && !session) {
+      navigate('/admin/login');
+    }
+  }, [session, isLoading, navigate]);
 
   if (isLoading) {
     return (
