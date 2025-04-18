@@ -167,7 +167,7 @@ const Contact = () => {
                     <h3 className="text-2xl font-bold text-tulip-dark-blue mb-6">Find Us</h3>
                     <div className="aspect-w-16 aspect-h-9 h-[300px]">
                       <iframe
-                        src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d387193.30596698857!2d-74.25986882266543!3d40.69714941680757!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x89c24fa5d33f083b%3A0xc80b8f06e177fe62!2sNew%20York%2C%20NY%2C%20USA!5e0!3m2!1sen!2sus!4v1650000000000!5m2!1sen!2sus"
+                        src="https://www.google.co.in/maps/place/Jain+Garments+Main+Market/@28.338599,77.3223554,17z/data=!3m1!4b1!4m6!3m5!1s0x390cdb9919f0c6f5:0x965d16bf98888a9b!8m2!3d28.3385943!4d77.3249303!16s%2Fg%2F11b7sv35jz?entry=ttu&g_ep=EgoyMDI1MDQxNC4xIKXMDSoASAFQAw%3D%3D"
                         width="100%"
                         height="100%"
                         style={{ border: 0 }}
