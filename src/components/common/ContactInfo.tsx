@@ -11,8 +11,8 @@ const ContactInfo = () => {
           <MapPin size={24} className="text-tulip-dark-blue mr-4 mt-1 flex-shrink-0" />
           <div>
             <h4 className="font-semibold mb-1">Address</h4>
-            <p className="text-gray-700">123 Dental Avenue, Suite 101</p>
-            <p className="text-gray-700">Dental City, DC 10001</p>
+            <p className="text-gray-700">123 Dental Avenue, Faridabad</p>
+            <p className="text-gray-700">Haryana, India, 121004</p>
           </div>
         </div>
         
@@ -20,7 +20,7 @@ const ContactInfo = () => {
           <Phone size={24} className="text-tulip-dark-blue mr-4 mt-1 flex-shrink-0" />
           <div>
             <h4 className="font-semibold mb-1">Phone</h4>
-            <p className="text-gray-700">(555) 123-4567</p>
+            <p className="text-gray-700">(91)-9956374887</p>
           </div>
         </div>
         

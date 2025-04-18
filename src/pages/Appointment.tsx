@@ -24,7 +24,7 @@ const Appointment = () => {
                   <Phone size={36} className="mx-auto text-tulip-dark-blue mb-4" />
                   <h3 className="text-xl font-bold text-tulip-dark-blue mb-2">Call Us</h3>
                   <p className="text-gray-700">Schedule directly by calling our office during business hours.</p>
-                  <p className="text-tulip-dark-blue font-bold mt-2">(555) 123-4567</p>
+                  <p className="text-tulip-dark-blue font-bold mt-2">(+91)-9956374887</p>
                 </div>
                 
                 <div className="bg-white p-6 rounded-lg shadow-sm text-center hover-lift">
