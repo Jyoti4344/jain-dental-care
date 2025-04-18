@@ -19,7 +19,6 @@ import {
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
-  AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -36,6 +35,25 @@ import { Progress } from "@/components/ui/progress";
 import { Loader, Search, Plus, Calendar, Clock, Edit, Trash2 } from "lucide-react";
 import { format, parseISO } from "date-fns";
 import { useToast } from "@/hooks/use-toast";
+
+// Define type for appointment data
+type AppointmentWithRelations = {
+  id: string;
+  appointment_date: string;
+  appointment_time: string;
+  status: string;
+  notes: string | null;
+  patients: {
+    first_name: string;
+    last_name: string;
+    email: string;
+    phone: string;
+  };
+  services: {
+    name: string;
+    duration: number;
+  };
+};
 
 const AppointmentsTab = () => {
   const { toast } = useToast();
@@ -54,8 +72,8 @@ const AppointmentsTab = () => {
           appointment_time,
           status,
           notes,
-          patients(first_name, last_name, email, phone),
-          services(name, duration)
+          patients!inner(first_name, last_name, email, phone),
+          services!inner(name, duration)
         `)
         .order("appointment_date", { ascending: true });
 
@@ -63,7 +81,7 @@ const AppointmentsTab = () => {
         throw error;
       }
 
-      return data || [];
+      return (data || []) as AppointmentWithRelations[];
     },
   });
 
@@ -104,8 +122,8 @@ const AppointmentsTab = () => {
 
   // Filter appointments based on search query
   const filteredAppointments = appointments?.filter((appointment) => {
-    const patientName = `${appointment.patients?.first_name} ${appointment.patients?.last_name}`.toLowerCase();
-    const serviceName = appointment.services?.name.toLowerCase() || "";
+    const patientName = `${appointment.patients.first_name} ${appointment.patients.last_name}`.toLowerCase();
+    const serviceName = appointment.services.name.toLowerCase() || "";
     const query = searchQuery.toLowerCase();
     
     return patientName.includes(query) || serviceName.includes(query);
@@ -187,14 +205,14 @@ const AppointmentsTab = () => {
                 </TableCell>
                 <TableCell>
                   <div>
-                    <p className="font-medium">{`${appointment.patients?.first_name} ${appointment.patients?.last_name}`}</p>
-                    <p className="text-sm text-gray-500">{appointment.patients?.phone}</p>
+                    <p className="font-medium">{`${appointment.patients.first_name} ${appointment.patients.last_name}`}</p>
+                    <p className="text-sm text-gray-500">{appointment.patients.phone}</p>
                   </div>
                 </TableCell>
                 <TableCell>
                   <div>
-                    <p>{appointment.services?.name}</p>
-                    <p className="text-sm text-gray-500">{appointment.services?.duration} min</p>
+                    <p>{appointment.services.name}</p>
+                    <p className="text-sm text-gray-500">{appointment.services.duration} min</p>
                   </div>
                 </TableCell>
                 <TableCell>
