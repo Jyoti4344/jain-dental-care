@@ -17,7 +17,7 @@ const Hero = () => {
             </p>
             <div className="flex flex-col sm:flex-row space-y-4 sm:space-y-0 sm:space-x-4">
             <Button asChild size="lg" className="bg-tulip-dark-blue hover:bg-blue-900 text-white font-semibold px-8">
-              <a href="https://appointment-booking-app-henna.vercel.app" rel="noopener noreferrer">
+              <a href="https://appointment-booking-app-henna.vercel.app" target="_blank" rel="noopener noreferrer">
                 Book Appointment
               </a>
             </Button>
