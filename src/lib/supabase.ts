@@ -106,47 +106,66 @@ export const checkStaffRole = async (userId: string) => {
 export const createDefaultAdminIfNeeded = async () => {
   try {
     // Check if default admin user already exists in auth
-    const { data: existingUsers, error: searchError } = await supabaseClient.auth.admin
-      .listUsers({
-        filter: `email.eq.${DEFAULT_ADMIN_EMAIL}`
-      });
-      
-    if (searchError) {
-      console.error("Error checking for default admin:", searchError);
-      return { success: false, error: searchError };
-    }
+    // Using a more compatible approach to search for users by email
+    console.log("Checking for default admin account");
     
-    let authId = existingUsers?.users?.[0]?.id;
+    // Try a direct sign-in with default credentials to check if account exists
+    const { data: signInData, error: signInError } = await signIn(DEFAULT_ADMIN_EMAIL, DEFAULT_ADMIN_PASSWORD);
     
-    // If user doesn't exist in auth, create them
-    if (!authId) {
-      const { data: signUpData, error: signUpError } = await signUp(
-        DEFAULT_ADMIN_EMAIL, 
-        DEFAULT_ADMIN_PASSWORD
-      );
+    if (!signInError && signInData?.user?.id) {
+      console.log("Default admin account exists and credentials are valid");
+      let authId = signInData.user.id;
       
-      if (signUpError) {
-        console.error("Error creating default admin user:", signUpError);
-        return { success: false, error: signUpError };
+      // Check if admin already exists in staff table
+      const { data: existingStaff } = await supabaseClient
+        .from('staff')
+        .select('*')
+        .eq('auth_id', authId);
+        
+      if (existingStaff && existingStaff.length > 0) {
+        console.log("Default admin already exists in staff table");
+        return { success: true, message: "Default admin already exists", user: signInData.user };
       }
       
-      authId = signUpData.user?.id;
+      // Create admin in staff table
+      const { data: newStaff, error: staffError } = await supabaseClient
+        .from('staff')
+        .insert({
+          auth_id: authId,
+          first_name: "Default",
+          last_name: "Admin",
+          email: DEFAULT_ADMIN_EMAIL,
+          role: "admin",
+          phone: "123-456-7890"
+        });
+        
+      if (staffError) {
+        console.error("Error creating default admin in staff table:", staffError);
+        return { success: false, error: staffError };
+      }
+      
+      console.log("Default admin created successfully in staff table");
+      return { success: true, message: "Default admin updated successfully", user: signInData.user };
+    } else {
+      console.log("Default admin account doesn't exist or credentials are invalid, creating new account");
     }
+    
+    // If we get here, we need to create a new account
+    const { data: signUpData, error: signUpError } = await signUp(
+      DEFAULT_ADMIN_EMAIL, 
+      DEFAULT_ADMIN_PASSWORD
+    );
+    
+    if (signUpError) {
+      console.error("Error creating default admin user:", signUpError);
+      return { success: false, error: signUpError };
+    }
+    
+    const authId = signUpData.user?.id;
     
     if (!authId) {
-      console.error("Failed to get or create auth ID for default admin");
+      console.error("Failed to get auth ID for default admin");
       return { success: false, error: new Error("Failed to get auth ID") };
-    }
-    
-    // Check if admin already exists in staff table
-    const { data: existingStaff } = await supabaseClient
-      .from('staff')
-      .select('*')
-      .eq('auth_id', authId);
-      
-    if (existingStaff && existingStaff.length > 0) {
-      console.log("Default admin already exists in staff table");
-      return { success: true, message: "Default admin already exists" };
     }
     
     // Create admin in staff table
@@ -167,7 +186,7 @@ export const createDefaultAdminIfNeeded = async () => {
     }
     
     console.log("Default admin created successfully");
-    return { success: true, message: "Default admin created successfully" };
+    return { success: true, message: "Default admin created successfully", user: signUpData.user };
   } catch (err) {
     console.error("Unexpected error creating default admin:", err);
     return { success: false, error: err };

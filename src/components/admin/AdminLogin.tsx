@@ -1,7 +1,14 @@
 
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { supabaseClient, signIn, checkStaffRole, DEFAULT_ADMIN_EMAIL, DEFAULT_ADMIN_PASSWORD } from '@/lib/supabase';
+import { 
+  supabaseClient, 
+  signIn, 
+  checkStaffRole, 
+  DEFAULT_ADMIN_EMAIL, 
+  DEFAULT_ADMIN_PASSWORD,
+  createDefaultAdminIfNeeded 
+} from '@/lib/supabase';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -15,6 +22,7 @@ const AdminLogin = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [isUsingDefault, setIsUsingDefault] = useState(false);
+  const [isCreatingAdmin, setIsCreatingAdmin] = useState(false);
   const navigate = useNavigate();
 
   // Check if the user is already logged in
@@ -39,6 +47,33 @@ const AdminLogin = () => {
     setEmail(DEFAULT_ADMIN_EMAIL);
     setPassword(DEFAULT_ADMIN_PASSWORD);
     setIsUsingDefault(true);
+  };
+
+  const createDefaultAdmin = async () => {
+    setIsCreatingAdmin(true);
+    setErrorMessage(null);
+    
+    try {
+      const result = await createDefaultAdminIfNeeded();
+      
+      if (result.success) {
+        toast.success('Default admin created', {
+          description: result.message,
+        });
+        
+        // Set the credentials for easy login
+        useDefaultCredentials();
+      } else {
+        setErrorMessage(`Failed to create default admin: ${result.error?.message}`);
+        toast.error('Failed to create default admin');
+      }
+    } catch (err: any) {
+      console.error("Error creating default admin:", err);
+      setErrorMessage(err.message || "An unexpected error occurred");
+      toast.error('Failed to create default admin');
+    } finally {
+      setIsCreatingAdmin(false);
+    }
   };
 
   const handleLogin = async (e: React.FormEvent) => {
@@ -158,6 +193,16 @@ const AdminLogin = () => {
             Use Default Admin Credentials
           </Button>
         )}
+        
+        <Button 
+          type="button" 
+          variant="secondary" 
+          className="w-full mt-2"
+          onClick={createDefaultAdmin}
+          disabled={isCreatingAdmin}
+        >
+          {isCreatingAdmin ? 'Creating Default Admin...' : 'Create Default Admin Account'}
+        </Button>
       </form>
       
       <Alert className="mt-6 bg-blue-50 border-blue-200">
