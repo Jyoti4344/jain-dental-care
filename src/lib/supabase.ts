@@ -19,10 +19,12 @@ export const signUp = async (email: string, password: string) => {
 };
 
 export const signIn = async (email: string, password: string) => {
+  console.log("Signing in with:", email);
   const { data, error } = await supabaseClient.auth.signInWithPassword({
     email,
     password,
   });
+  console.log("Sign in result:", data, error);
   return { data, error };
 };
 
@@ -41,13 +43,29 @@ export const getSession = async () => {
   return { session: data.session, error };
 };
 
-// Add helper functions for staff and admin roles
+// Improved helper function for staff and admin roles with better debugging
 export const checkStaffRole = async (userId: string) => {
+  console.log("Checking staff role for userId:", userId);
+  
+  // First debug - check if the staff table exists and has records
+  const { count: staffCount, error: countError } = await supabaseClient
+    .from('staff')
+    .select('*', { count: 'exact', head: true });
+    
+  console.log("Staff table count:", staffCount, "Error:", countError);
+  
+  // Now attempt to fetch the actual staff record
   const { data, error } = await supabaseClient
     .from('staff')
-    .select('role')
-    .eq('auth_id', userId)
-    .single();
+    .select('*')
+    .eq('auth_id', userId);
   
-  return { role: data?.role, error };
+  console.log("Staff query result:", data, "Error:", error);
+  
+  if (error || !data || data.length === 0) {
+    console.error("No staff record found for user:", userId);
+    return { role: null, error: error || new Error("Staff record not found") };
+  }
+  
+  return { role: data[0].role, error: null, staffRecord: data[0] };
 };

@@ -6,7 +6,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { CalendarIcon } from "lucide-react";
 import { format } from "date-fns";
 import { cn } from "@/lib/utils";
-import { useToast } from "@/hooks/use-toast";
+import { toast } from "sonner";
 import { supabaseClient } from "@/lib/supabase";
 import { useQuery } from "@tanstack/react-query";
 
@@ -59,21 +59,25 @@ const formSchema = z.object({
 });
 
 const AppointmentForm = () => {
-  const { toast } = useToast();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [availableTimeSlots, setAvailableTimeSlots] = useState<string[]>([]);
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
 
-  // Fetch available services from Supabase
-  const { data: services, isLoading: loadingServices } = useQuery({
+  // Fetch available services from Supabase with improved error handling
+  const { data: services, isLoading: loadingServices, error: servicesError } = useQuery({
     queryKey: ["services"],
     queryFn: async () => {
+      console.log("Fetching services...");
       const { data, error } = await supabaseClient
         .from("services")
-        .select("id, name")
-        .order("name");
+        .select("id, name");
       
-      if (error) throw error;
+      if (error) {
+        console.error("Error fetching services:", error);
+        throw error;
+      }
+      
+      console.log("Services fetched:", data);
       return data || [];
     },
   });
@@ -173,20 +177,17 @@ const AppointmentForm = () => {
       if (appointmentError) throw appointmentError;
       
       // Show success message
-      toast({
-        title: "Appointment scheduled",
-        description: "We will contact you shortly to confirm your appointment.",
+      toast("Appointment scheduled", {
+        description: "We will contact you shortly to confirm your appointment."
       });
       
       // Reset form
       form.reset();
       setSelectedDate(null);
-    } catch (error) {
+    } catch (error: any) {
       console.error("Error submitting appointment:", error);
-      toast({
-        title: "Something went wrong",
-        description: "Unable to schedule appointment. Please try again.",
-        variant: "destructive",
+      toast("Something went wrong", {
+        description: "Unable to schedule appointment. Please try again."
       });
     } finally {
       setIsSubmitting(false);
@@ -204,6 +205,12 @@ const AppointmentForm = () => {
   return (
     <div className="bg-white rounded-lg shadow-lg p-6 md:p-8">
       <h2 className="text-2xl font-bold text-tulip-dark-blue mb-6">Request an Appointment</h2>
+      
+      {servicesError && (
+        <Alert variant="destructive" className="mb-6">
+          <AlertDescription>Failed to load services. Please refresh the page or try again later.</AlertDescription>
+        </Alert>
+      )}
       
       {loadingServices && (
         <Alert className="mb-6">
@@ -348,11 +355,17 @@ const AppointmentForm = () => {
                     </SelectTrigger>
                   </FormControl>
                   <SelectContent>
-                    {services?.map((service) => (
-                      <SelectItem key={service.id} value={service.id}>
-                        {service.name}
+                    {services && services.length > 0 ? (
+                      services.map((service) => (
+                        <SelectItem key={service.id} value={service.id}>
+                          {service.name}
+                        </SelectItem>
+                      ))
+                    ) : (
+                      <SelectItem value="none" disabled>
+                        No services available
                       </SelectItem>
-                    ))}
+                    )}
                   </SelectContent>
                 </Select>
                 <FormMessage />

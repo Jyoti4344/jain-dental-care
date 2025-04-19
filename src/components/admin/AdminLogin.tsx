@@ -1,18 +1,19 @@
 
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { supabaseClient, checkStaffRole } from '@/lib/supabase';
+import { supabaseClient, signIn, checkStaffRole } from '@/lib/supabase';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { toast } from 'sonner';
-import { Shield, Lock, Mail } from 'lucide-react';
+import { Shield, Lock, Mail, AlertCircle } from 'lucide-react';
 
 const AdminLogin = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const navigate = useNavigate();
 
   // Check if the user is already logged in
@@ -36,39 +37,54 @@ const AdminLogin = () => {
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
+    setErrorMessage(null);
 
     try {
-      const { data, error } = await supabaseClient.auth.signInWithPassword({
-        email,
-        password,
-      });
+      console.log("Attempting to sign in with:", email);
+      const { data, error } = await signIn(email, password);
 
       if (error) {
-        toast.error('Login failed', {
+        console.error("Auth error:", error);
+        setErrorMessage(error.message);
+        toast.error('Authentication failed', {
           description: error.message,
         });
         return;
       }
 
-      // Check if the logged-in user is an admin
-      if (data.user) {
-        const { role, error: roleError } = await checkStaffRole(data.user.id);
-
-        if (roleError || role !== 'admin') {
-          await supabaseClient.auth.signOut();
-          toast.error('Access Denied', {
-            description: 'You do not have admin privileges.',
-          });
-          return;
-        }
-
-        toast.success('Login Successful', {
-          description: 'Redirecting to admin dashboard...',
-        });
-        navigate('/admin');
+      if (!data.user) {
+        setErrorMessage("No user returned from authentication");
+        return;
       }
-    } catch (err) {
-      toast.error('An unexpected error occurred');
+
+      // Check if the logged-in user is an admin
+      console.log("Checking staff role for:", data.user.id);
+      const { role, error: roleError, staffRecord } = await checkStaffRole(data.user.id);
+      
+      console.log("Role check result:", role, staffRecord);
+
+      if (roleError) {
+        console.error("Role check error:", roleError);
+        setErrorMessage("Error verifying staff role: " + roleError.message);
+        await supabaseClient.auth.signOut();
+        return;
+      }
+
+      if (role !== 'admin') {
+        console.error("User is not an admin. Role:", role);
+        setErrorMessage("You do not have admin privileges. Your role: " + role);
+        await supabaseClient.auth.signOut();
+        return;
+      }
+
+      toast.success('Login Successful', {
+        description: 'Redirecting to admin dashboard...',
+      });
+      navigate('/admin');
+    } catch (err: any) {
+      console.error("Unexpected error:", err);
+      setErrorMessage(err.message || "An unexpected error occurred");
+      toast.error('Login failed');
     } finally {
       setIsLoading(false);
     }
@@ -83,6 +99,13 @@ const AdminLogin = () => {
         <h2 className="text-2xl font-bold">Admin Login</h2>
         <p className="text-gray-500 mt-2">Access the dental practice management system</p>
       </div>
+      
+      {errorMessage && (
+        <Alert variant="destructive" className="mb-6">
+          <AlertCircle className="h-4 w-4 mr-2" />
+          <AlertDescription>{errorMessage}</AlertDescription>
+        </Alert>
+      )}
       
       <form onSubmit={handleLogin} className="space-y-4">
         <div>
@@ -121,7 +144,8 @@ const AdminLogin = () => {
       
       <Alert className="mt-6">
         <AlertDescription className="text-sm">
-          <strong>Demo Login:</strong> Use the admin account created in your Supabase Auth.
+          <strong>Note:</strong> Make sure you have created a staff member with role='admin' in your Supabase database 
+          and linked it to an authenticated user.
         </AlertDescription>
       </Alert>
     </div>
