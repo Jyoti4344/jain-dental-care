@@ -43,29 +43,133 @@ export const getSession = async () => {
   return { session: data.session, error };
 };
 
-// Improved helper function for staff and admin roles with better debugging
+// Default admin credentials for development
+export const DEFAULT_ADMIN_EMAIL = "admin@tulipdental.com";
+export const DEFAULT_ADMIN_PASSWORD = "Tulip@123";
+
+// Improved helper function for staff and admin roles with enhanced debugging
 export const checkStaffRole = async (userId: string) => {
   console.log("Checking staff role for userId:", userId);
   
-  // First debug - check if the staff table exists and has records
-  const { count: staffCount, error: countError } = await supabaseClient
-    .from('staff')
-    .select('*', { count: 'exact', head: true });
+  try {
+    // First check if the user is our default development admin
+    const { data: user } = await supabaseClient.auth.getUser();
+    console.log("Current user email:", user?.user?.email);
     
-  console.log("Staff table count:", staffCount, "Error:", countError);
-  
-  // Now attempt to fetch the actual staff record
-  const { data, error } = await supabaseClient
-    .from('staff')
-    .select('*')
-    .eq('auth_id', userId);
-  
-  console.log("Staff query result:", data, "Error:", error);
-  
-  if (error || !data || data.length === 0) {
-    console.error("No staff record found for user:", userId);
-    return { role: null, error: error || new Error("Staff record not found") };
+    if (user?.user?.email === DEFAULT_ADMIN_EMAIL && userId === user?.user?.id) {
+      console.log("Using default admin account");
+      return { 
+        role: "admin", 
+        error: null, 
+        staffRecord: { 
+          id: "default-admin",
+          first_name: "Default", 
+          last_name: "Admin",
+          role: "admin" 
+        } 
+      };
+    }
+    
+    // Debug - check if the staff table exists and has records
+    const { count: staffCount, error: countError } = await supabaseClient
+      .from('staff')
+      .select('*', { count: 'exact', head: true });
+      
+    console.log("Staff table count:", staffCount, "Error:", countError);
+    
+    // Now attempt to fetch the actual staff record
+    const { data, error } = await supabaseClient
+      .from('staff')
+      .select('*')
+      .eq('auth_id', userId);
+    
+    console.log("Staff query result:", data, "Error:", error);
+    
+    if (error) {
+      console.error("Database error while checking staff:", error);
+      return { role: null, error, staffRecord: null };
+    }
+    
+    if (!data || data.length === 0) {
+      console.error("No staff record found for user:", userId);
+      return { role: null, error: new Error("Staff record not found"), staffRecord: null };
+    }
+    
+    return { role: data[0].role, error: null, staffRecord: data[0] };
+  } catch (err) {
+    console.error("Unexpected error in checkStaffRole:", err);
+    return { role: null, error: err as Error, staffRecord: null };
   }
-  
-  return { role: data[0].role, error: null, staffRecord: data[0] };
+};
+
+// Helper function to add default admin if needed
+export const createDefaultAdminIfNeeded = async () => {
+  try {
+    // Check if default admin user already exists in auth
+    const { data: existingUsers, error: searchError } = await supabaseClient.auth.admin
+      .listUsers({
+        filter: `email.eq.${DEFAULT_ADMIN_EMAIL}`
+      });
+      
+    if (searchError) {
+      console.error("Error checking for default admin:", searchError);
+      return { success: false, error: searchError };
+    }
+    
+    let authId = existingUsers?.users?.[0]?.id;
+    
+    // If user doesn't exist in auth, create them
+    if (!authId) {
+      const { data: signUpData, error: signUpError } = await signUp(
+        DEFAULT_ADMIN_EMAIL, 
+        DEFAULT_ADMIN_PASSWORD
+      );
+      
+      if (signUpError) {
+        console.error("Error creating default admin user:", signUpError);
+        return { success: false, error: signUpError };
+      }
+      
+      authId = signUpData.user?.id;
+    }
+    
+    if (!authId) {
+      console.error("Failed to get or create auth ID for default admin");
+      return { success: false, error: new Error("Failed to get auth ID") };
+    }
+    
+    // Check if admin already exists in staff table
+    const { data: existingStaff } = await supabaseClient
+      .from('staff')
+      .select('*')
+      .eq('auth_id', authId);
+      
+    if (existingStaff && existingStaff.length > 0) {
+      console.log("Default admin already exists in staff table");
+      return { success: true, message: "Default admin already exists" };
+    }
+    
+    // Create admin in staff table
+    const { data: newStaff, error: staffError } = await supabaseClient
+      .from('staff')
+      .insert({
+        auth_id: authId,
+        first_name: "Default",
+        last_name: "Admin",
+        email: DEFAULT_ADMIN_EMAIL,
+        role: "admin",
+        phone: "123-456-7890"
+      });
+      
+    if (staffError) {
+      console.error("Error creating default admin in staff table:", staffError);
+      return { success: false, error: staffError };
+    }
+    
+    console.log("Default admin created successfully");
+    return { success: true, message: "Default admin created successfully" };
+  } catch (err) {
+    console.error("Unexpected error creating default admin:", err);
+    return { success: false, error: err };
+  }
 };

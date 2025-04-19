@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
@@ -58,27 +57,106 @@ const formSchema = z.object({
   message: z.string().optional(),
 });
 
+const ensureDefaultServices = async () => {
+  console.log("Checking for default services...");
+  
+  const { count } = await supabaseClient
+    .from('services')
+    .select('*', { count: 'exact', head: true });
+  
+  console.log(`Found ${count} services`);
+  
+  if (!count || count < 1) {
+    console.log("No services found. Adding default services...");
+    
+    const defaultServices = [
+      { 
+        name: "Regular Checkup", 
+        description: "Comprehensive dental examination and consultation", 
+        duration: 30, 
+        price: 50 
+      },
+      { 
+        name: "Teeth Cleaning", 
+        description: "Professional dental cleaning and polishing", 
+        duration: 60, 
+        price: 80 
+      },
+      { 
+        name: "Root Canal", 
+        description: "Treatment for infected tooth pulp", 
+        duration: 90, 
+        price: 200 
+      },
+      { 
+        name: "Tooth Extraction", 
+        description: "Safe removal of damaged or problematic teeth", 
+        duration: 45, 
+        price: 150 
+      }
+    ];
+    
+    const { error } = await supabaseClient
+      .from('services')
+      .insert(defaultServices);
+      
+    if (error) {
+      console.error("Error adding default services:", error);
+    } else {
+      console.log("Default services added successfully");
+    }
+  }
+};
+
 const AppointmentForm = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [availableTimeSlots, setAvailableTimeSlots] = useState<string[]>([]);
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
 
-  // Fetch available services from Supabase with improved error handling
+  useEffect(() => {
+    ensureDefaultServices();
+  }, []);
+
   const { data: services, isLoading: loadingServices, error: servicesError } = useQuery({
     queryKey: ["services"],
     queryFn: async () => {
       console.log("Fetching services...");
-      const { data, error } = await supabaseClient
-        .from("services")
-        .select("id, name");
       
-      if (error) {
-        console.error("Error fetching services:", error);
-        throw error;
+      try {
+        const { data, error } = await supabaseClient
+          .from("services")
+          .select("id, name, duration, price, description");
+        
+        if (error) {
+          console.error("Error fetching services:", error);
+          throw error;
+        }
+        
+        console.log("Services fetched:", data);
+        
+        if (!data || data.length === 0) {
+          console.log("No services found. Attempting to add defaults...");
+          await ensureDefaultServices();
+          
+          // Try fetching again
+          const { data: retryData, error: retryError } = await supabaseClient
+            .from("services")
+            .select("id, name, duration, price, description");
+            
+          if (retryError) {
+            console.error("Error in retry fetch:", retryError);
+            throw retryError;
+          }
+          
+          console.log("Retry services fetch result:", retryData);
+          return retryData || [];
+        }
+        
+        return data;
+      } catch (err) {
+        console.error("Unexpected error in service fetch:", err);
+        throw err;
       }
-      
-      console.log("Services fetched:", data);
-      return data || [];
     },
   });
 
@@ -92,13 +170,10 @@ const AppointmentForm = () => {
     },
   });
 
-  // Update available time slots when date changes
   useEffect(() => {
     const updateTimeSlots = async () => {
       if (!selectedDate) return;
       
-      // This would normally check against existing appointments in the database
-      // For now, we'll use a simple algorithm to generate time slots
       const baseTimeSlots = [
         "9:00 AM", "9:30 AM", "10:00 AM", "10:30 AM", 
         "11:00 AM", "11:30 AM", "1:00 PM", "1:30 PM", 
@@ -106,8 +181,6 @@ const AppointmentForm = () => {
       ];
       
       try {
-        // In a real implementation, we would query Supabase for booked slots
-        // and remove them from the available slots
         const formattedDate = format(selectedDate, "yyyy-MM-dd");
         
         const { data: bookedAppointments } = await supabaseClient
@@ -132,7 +205,6 @@ const AppointmentForm = () => {
     setIsSubmitting(true);
     
     try {
-      // First check if patient exists
       const { data: existingPatients, error: patientError } = await supabaseClient
         .from("patients")
         .select("id")
@@ -143,7 +215,6 @@ const AppointmentForm = () => {
       
       let patientId;
       
-      // If patient doesn't exist, create one
       if (!existingPatients) {
         const { data: newPatient, error: createError } = await supabaseClient
           .from("patients")
@@ -162,7 +233,6 @@ const AppointmentForm = () => {
         patientId = existingPatients.id;
       }
       
-      // Create the appointment
       const { error: appointmentError } = await supabaseClient
         .from("appointments")
         .insert({
@@ -176,12 +246,10 @@ const AppointmentForm = () => {
         
       if (appointmentError) throw appointmentError;
       
-      // Show success message
       toast("Appointment scheduled", {
         description: "We will contact you shortly to confirm your appointment."
       });
       
-      // Reset form
       form.reset();
       setSelectedDate(null);
     } catch (error: any) {
@@ -194,7 +262,6 @@ const AppointmentForm = () => {
     }
   }
 
-  // Watch for date change to update available time slots
   const watchDate = form.watch("date");
   useEffect(() => {
     if (watchDate) {
@@ -208,13 +275,24 @@ const AppointmentForm = () => {
       
       {servicesError && (
         <Alert variant="destructive" className="mb-6">
-          <AlertDescription>Failed to load services. Please refresh the page or try again later.</AlertDescription>
+          <AlertDescription>
+            Failed to load services. Please refresh the page or try again later.
+            Error: {servicesError.message}
+          </AlertDescription>
         </Alert>
       )}
       
       {loadingServices && (
         <Alert className="mb-6">
           <AlertDescription>Loading available services...</AlertDescription>
+        </Alert>
+      )}
+      
+      {!loadingServices && services && services.length === 0 && (
+        <Alert variant="destructive" className="mb-6">
+          <AlertDescription>
+            No services are currently available. Please contact the clinic directly.
+          </AlertDescription>
         </Alert>
       )}
       
@@ -358,12 +436,12 @@ const AppointmentForm = () => {
                     {services && services.length > 0 ? (
                       services.map((service) => (
                         <SelectItem key={service.id} value={service.id}>
-                          {service.name}
+                          {service.name} - ${service.price} ({service.duration} min)
                         </SelectItem>
                       ))
                     ) : (
                       <SelectItem value="none" disabled>
-                        No services available
+                        {loadingServices ? "Loading services..." : "No services available"}
                       </SelectItem>
                     )}
                   </SelectContent>

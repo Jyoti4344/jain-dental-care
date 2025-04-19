@@ -1,19 +1,20 @@
 
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { supabaseClient, signIn, checkStaffRole } from '@/lib/supabase';
+import { supabaseClient, signIn, checkStaffRole, DEFAULT_ADMIN_EMAIL, DEFAULT_ADMIN_PASSWORD } from '@/lib/supabase';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { toast } from 'sonner';
-import { Shield, Lock, Mail, AlertCircle } from 'lucide-react';
+import { Shield, Lock, Mail, AlertCircle, Info } from 'lucide-react';
 
 const AdminLogin = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [isUsingDefault, setIsUsingDefault] = useState(false);
   const navigate = useNavigate();
 
   // Check if the user is already logged in
@@ -34,6 +35,12 @@ const AdminLogin = () => {
     checkSession();
   }, [navigate]);
 
+  const useDefaultCredentials = () => {
+    setEmail(DEFAULT_ADMIN_EMAIL);
+    setPassword(DEFAULT_ADMIN_PASSWORD);
+    setIsUsingDefault(true);
+  };
+
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
@@ -45,7 +52,7 @@ const AdminLogin = () => {
 
       if (error) {
         console.error("Auth error:", error);
-        setErrorMessage(error.message);
+        setErrorMessage(`Authentication failed: ${error.message}`);
         toast.error('Authentication failed', {
           description: error.message,
         });
@@ -117,7 +124,7 @@ const AdminLogin = () => {
             id="email"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
-            placeholder="admin@example.com"
+            placeholder={DEFAULT_ADMIN_EMAIL}
             required
             className="mt-1"
           />
@@ -140,12 +147,25 @@ const AdminLogin = () => {
         <Button type="submit" className="w-full" disabled={isLoading}>
           {isLoading ? 'Logging in...' : 'Login'}
         </Button>
+        
+        {!isUsingDefault && (
+          <Button 
+            type="button" 
+            variant="outline" 
+            className="w-full mt-2"
+            onClick={useDefaultCredentials}
+          >
+            Use Default Admin Credentials
+          </Button>
+        )}
       </form>
       
-      <Alert className="mt-6">
+      <Alert className="mt-6 bg-blue-50 border-blue-200">
+        <Info className="h-4 w-4 text-blue-500 mr-2" />
         <AlertDescription className="text-sm">
-          <strong>Note:</strong> Make sure you have created a staff member with role='admin' in your Supabase database 
-          and linked it to an authenticated user.
+          <strong>Default Admin Credentials:</strong><br/>
+          Email: {DEFAULT_ADMIN_EMAIL}<br/>
+          Password: {DEFAULT_ADMIN_PASSWORD}
         </AlertDescription>
       </Alert>
     </div>
