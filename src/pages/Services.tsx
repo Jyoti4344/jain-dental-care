@@ -139,7 +139,7 @@ const Services = () => {
             <div className="text-center mb-12">
               <h2 className="text-3xl font-bold text-tulip-dark-blue mb-4">Comprehensive Dental Care</h2>
               <p className="text-lg text-gray-700 max-w-3xl mx-auto">
-                At Tulip Dental Clinic, we offer a wide range of dental services to meet the needs of your entire family,
+                At Jain Dental Clinic, we offer a wide range of dental services to meet the needs of your entire family,
                 all delivered with expertise and compassion.
               </p>
             </div>
