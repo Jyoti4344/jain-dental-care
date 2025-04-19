@@ -7,7 +7,7 @@ import ContactInfo from "@/components/common/ContactInfo";
 import { Phone, Mail, CalendarCheck, Info } from "lucide-react";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { useState, useEffect } from "react";
-import { supabaseClient, ensureDefaultServices } from "@/lib/supabase";
+import { ensureDefaultServices } from "@/lib/supabase";
 
 const Appointment = () => {
   const [servicesLoading, setServicesLoading] = useState(true);
@@ -16,11 +16,18 @@ const Appointment = () => {
   useEffect(() => {
     const initializeServices = async () => {
       try {
+        setServicesLoading(true);
+        console.log("Initializing services...");
         const result = await ensureDefaultServices();
+        
         if (!result.success) {
-          setServicesError("Could not initialize default services. Some features may be limited.");
+          console.error("Services initialization failed:", result.error);
+          setServicesError("Could not initialize default services. Please try again.");
+        } else {
+          console.log("Services initialized successfully");
         }
       } catch (error: any) {
+        console.error("Error initializing services:", error);
         setServicesError(error.message || "An unexpected error occurred initializing services");
       } finally {
         setServicesLoading(false);

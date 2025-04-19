@@ -1,11 +1,10 @@
 
-import { useState } from "react";
-import { useQuery } from "@tanstack/react-query";
-import { supabaseClient } from "@/lib/supabase";
+import { useState, useEffect } from "react";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import * as z from "zod";
 import { toast } from "sonner";
+import { getAllServices } from "@/lib/supabase";
 
 import { 
   Table, 
@@ -45,10 +44,14 @@ const serviceFormSchema = z.object({
 
 type ServiceFormValues = z.infer<typeof serviceFormSchema>;
 
+const SERVICES_KEY = 'tulip_dental_services';
+
 const ServicesTab = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [isAddServiceOpen, setIsAddServiceOpen] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [services, setServices] = useState<any[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
 
   const form = useForm<ServiceFormValues>({
     resolver: zodResolver(serviceFormSchema),
@@ -60,21 +63,28 @@ const ServicesTab = () => {
     },
   });
 
-  const { data: services, isLoading, refetch } = useQuery({
-    queryKey: ["services"],
-    queryFn: async () => {
-      const { data, error } = await supabaseClient
-        .from("services")
-        .select("*")
-        .order("name", { ascending: true });
-
-      if (error) {
-        throw error;
+  // Load services from localStorage
+  useEffect(() => {
+    const loadServices = async () => {
+      try {
+        setIsLoading(true);
+        const { data, error } = await getAllServices();
+        
+        if (error) {
+          throw error;
+        }
+        
+        setServices(data || []);
+      } catch (error) {
+        console.error("Error loading services:", error);
+        toast.error("Failed to load services");
+      } finally {
+        setIsLoading(false);
       }
-
-      return data || [];
-    },
-  });
+    };
+    
+    loadServices();
+  }, []);
 
   // Filter services based on search query
   const filteredServices = services?.filter((service) => {
@@ -89,20 +99,25 @@ const ServicesTab = () => {
     setIsSubmitting(true);
     
     try {
-      const { error } = await supabaseClient
-        .from("services")
-        .insert({
-          name: data.name,
-          description: data.description,
-          duration: data.duration,
-          price: data.price,
-        });
-        
-      if (error) throw error;
+      // Add service to localStorage
+      const services = JSON.parse(localStorage.getItem(SERVICES_KEY) || '[]');
+      
+      const newService = {
+        id: `service_${Date.now()}`,
+        name: data.name,
+        description: data.description,
+        duration: data.duration,
+        price: data.price,
+      };
+      
+      services.push(newService);
+      localStorage.setItem(SERVICES_KEY, JSON.stringify(services));
+      
+      // Update local state
+      setServices(services);
       
       toast.success("Service added successfully");
       form.reset();
-      refetch();
       setIsAddServiceOpen(false);
     } catch (error: any) {
       toast.error("Failed to add service", {
@@ -117,15 +132,16 @@ const ServicesTab = () => {
     if (!confirm("Are you sure you want to delete this service?")) return;
     
     try {
-      const { error } = await supabaseClient
-        .from("services")
-        .delete()
-        .eq("id", id);
-        
-      if (error) throw error;
+      // Remove service from localStorage
+      const services = JSON.parse(localStorage.getItem(SERVICES_KEY) || '[]');
+      const updatedServices = services.filter((service: any) => service.id !== id);
+      
+      localStorage.setItem(SERVICES_KEY, JSON.stringify(updatedServices));
+      
+      // Update local state
+      setServices(updatedServices);
       
       toast.success("Service deleted successfully");
-      refetch();
     } catch (error: any) {
       toast.error("Failed to delete service", {
         description: error.message,

@@ -11,53 +11,52 @@ import PatientsTab from "@/components/admin/PatientsTab";
 import StaffTab from "@/components/admin/StaffTab";
 import ServicesTab from "@/components/admin/ServicesTab";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { useQuery } from "@tanstack/react-query";
-import { supabaseClient, checkStaffRole } from "@/lib/supabase";
+import { getSession, checkStaffRole } from "@/lib/supabase";
 import { Loader } from "lucide-react";
 
 const AdminDashboard = () => {
   const [activeTab, setActiveTab] = useState("appointments");
   const navigate = useNavigate();
+  const [session, setSession] = useState<any>(null);
+  const [staffInfo, setStaffInfo] = useState<any>(null);
+  const [isLoading, setIsLoading] = useState(true);
   
-  const { data: session, isLoading: sessionLoading } = useQuery({
-    queryKey: ["session"],
-    queryFn: async () => {
-      const { data } = await supabaseClient.auth.getSession();
-      return data.session;
-    },
-  });
-
-  const { data: staffInfo, isLoading: staffLoading } = useQuery({
-    queryKey: ["staffInfo", session?.user?.id],
-    queryFn: async () => {
-      if (!session?.user?.id) return null;
-      
-      const { data, error } = await supabaseClient
-        .from("staff")
-        .select("*")
-        .eq("auth_id", session.user.id)
-        .single();
-        
-      if (error) throw error;
-      return data;
-    },
-    enabled: !!session?.user?.id,
-  });
-
   useEffect(() => {
-    // If no session, redirect to admin login
-    if (!sessionLoading && !session) {
-      navigate('/admin/login');
-    }
+    const checkAuth = async () => {
+      try {
+        setIsLoading(true);
+        
+        // Get session from localStorage
+        const { session, error } = await getSession();
+        setSession(session);
+        
+        if (!session) {
+          // Redirect to login if no session
+          navigate('/admin/login');
+          return;
+        }
+        
+        // Check if user is admin
+        const { role, staffRecord } = await checkStaffRole(session.user.id);
+        
+        if (role !== 'admin') {
+          // Sign out and redirect if not admin
+          localStorage.removeItem('tulip_dental_auth_session');
+          navigate('/admin/login');
+          return;
+        }
+        
+        setStaffInfo(staffRecord);
+      } catch (error) {
+        console.error("Error checking authentication:", error);
+        navigate('/admin/login');
+      } finally {
+        setIsLoading(false);
+      }
+    };
     
-    // If user is not admin, redirect to login
-    if (!staffLoading && staffInfo && staffInfo.role !== 'admin') {
-      supabaseClient.auth.signOut();
-      navigate('/admin/login');
-    }
-  }, [session, sessionLoading, staffInfo, staffLoading, navigate]);
-
-  const isLoading = sessionLoading || staffLoading;
+    checkAuth();
+  }, [navigate]);
 
   if (isLoading) {
     return (

@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
@@ -6,8 +7,7 @@ import { CalendarIcon } from "lucide-react";
 import { format } from "date-fns";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
-import { supabaseClient, ensureDefaultServices } from "@/lib/supabase";
-import { useQuery } from "@tanstack/react-query";
+import { ensureDefaultServices, getAllServices, createPatient, findPatientByEmail, createAppointment } from "@/lib/supabase";
 
 import { Button } from "@/components/ui/button";
 import { Calendar } from "@/components/ui/calendar";
@@ -61,61 +61,36 @@ const AppointmentForm = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [availableTimeSlots, setAvailableTimeSlots] = useState<string[]>([]);
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
-  const [servicesFetchAttempted, setServicesFetchAttempted] = useState(false);
+  const [services, setServices] = useState<any[]>([]);
+  const [loadingServices, setLoadingServices] = useState(true);
+  const [servicesError, setServicesError] = useState<Error | null>(null);
 
+  // Initialize services on component mount
   useEffect(() => {
-    const initializeServices = async () => {
-      console.log("Initializing services...");
-      
-      const result = await ensureDefaultServices();
-      
-      if (result.success) {
-        console.log("Services initialization successful:", result.message);
-      } else {
-        console.error("Services initialization failed:", result.error);
-      }
-      
-      setServicesFetchAttempted(true);
-    };
-    
-    initializeServices();
-  }, []);
-
-  const { data: services, isLoading: loadingServices, error: servicesError, refetch } = useQuery({
-    queryKey: ["services"],
-    queryFn: async () => {
-      console.log("Fetching services...");
-      
+    const loadServices = async () => {
       try {
-        const { data, error } = await supabaseClient
-          .from("services")
-          .select("id, name, duration, price, description");
+        setLoadingServices(true);
+        // First ensure default services exist
+        await ensureDefaultServices();
+        
+        // Then fetch services
+        const { data, error } = await getAllServices();
         
         if (error) {
-          console.error("Error fetching services:", error);
           throw error;
         }
         
-        console.log("Services fetched:", data);
-        return data || [];
-      } catch (err) {
-        console.error("Unexpected error in service fetch:", err);
-        throw err;
+        setServices(data || []);
+      } catch (error: any) {
+        console.error("Error loading services:", error);
+        setServicesError(error);
+      } finally {
+        setLoadingServices(false);
       }
-    },
-    enabled: servicesFetchAttempted
-  });
-
-  useEffect(() => {
-    if (servicesFetchAttempted && (!services || services.length === 0)) {
-      console.log("No services found on first fetch, retrying...");
-      const timer = setTimeout(() => {
-        refetch();
-      }, 2000);
-      
-      return () => clearTimeout(timer);
-    }
-  }, [servicesFetchAttempted, services, refetch]);
+    };
+    
+    loadServices();
+  }, []);
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -131,6 +106,7 @@ const AppointmentForm = () => {
     const updateTimeSlots = async () => {
       if (!selectedDate) return;
       
+      // Base time slots for a working day
       const baseTimeSlots = [
         "9:00 AM", "9:30 AM", "10:00 AM", "10:30 AM", 
         "11:00 AM", "11:30 AM", "1:00 PM", "1:30 PM", 
@@ -140,12 +116,13 @@ const AppointmentForm = () => {
       try {
         const formattedDate = format(selectedDate, "yyyy-MM-dd");
         
-        const { data: bookedAppointments } = await supabaseClient
-          .from("appointments")
-          .select("appointment_time")
-          .eq("appointment_date", formattedDate);
-          
-        const bookedTimes = (bookedAppointments || []).map(app => app.appointment_time);
+        // Get booked appointments for the selected date
+        const appointments = JSON.parse(localStorage.getItem('tulip_dental_appointments') || '[]');
+        const bookedAppointments = appointments.filter((app: any) => 
+          app.appointment_date === formattedDate
+        );
+        
+        const bookedTimes = bookedAppointments.map((app: any) => app.appointment_time);
         const availableTimes = baseTimeSlots.filter(time => !bookedTimes.includes(time));
         
         setAvailableTimeSlots(availableTimes);
@@ -162,51 +139,44 @@ const AppointmentForm = () => {
     setIsSubmitting(true);
     
     try {
-      const { data: existingPatients, error: patientError } = await supabaseClient
-        .from("patients")
-        .select("id")
-        .eq("email", data.email)
-        .maybeSingle();
-        
-      if (patientError) throw patientError;
+      // Check if patient exists
+      const { data: existingPatient } = await findPatientByEmail(data.email);
       
       let patientId;
       
-      if (!existingPatients) {
-        const { data: newPatient, error: createError } = await supabaseClient
-          .from("patients")
-          .insert({
-            first_name: data.name.split(' ')[0],
-            last_name: data.name.split(' ').slice(1).join(' ') || '',
-            email: data.email,
-            phone: data.phone
-          })
-          .select("id")
-          .single();
-          
+      if (!existingPatient) {
+        // Create new patient
+        const { data: newPatient, error: createError } = await createPatient({
+          first_name: data.name.split(' ')[0],
+          last_name: data.name.split(' ').slice(1).join(' ') || '',
+          email: data.email,
+          phone: data.phone
+        });
+        
         if (createError) throw createError;
         patientId = newPatient.id;
       } else {
-        patientId = existingPatients.id;
+        patientId = existingPatient.id;
       }
       
-      const { error: appointmentError } = await supabaseClient
-        .from("appointments")
-        .insert({
-          patient_id: patientId,
-          service_id: data.service,
-          appointment_date: format(data.date, "yyyy-MM-dd"),
-          appointment_time: data.time,
-          status: "scheduled",
-          notes: data.message || null
-        });
-        
+      // Create appointment
+      const { error: appointmentError } = await createAppointment({
+        patient_id: patientId,
+        service_id: data.service,
+        appointment_date: format(data.date, "yyyy-MM-dd"),
+        appointment_time: data.time,
+        status: "scheduled",
+        notes: data.message || null
+      });
+      
       if (appointmentError) throw appointmentError;
       
+      // Success message
       toast("Appointment scheduled", {
         description: "We will contact you shortly to confirm your appointment."
       });
       
+      // Reset form and selected date
       form.reset();
       setSelectedDate(null);
     } catch (error: any) {
@@ -245,7 +215,7 @@ const AppointmentForm = () => {
         </Alert>
       )}
       
-      {!loadingServices && services && services.length === 0 && (
+      {!loadingServices && services.length === 0 && (
         <Alert variant="destructive" className="mb-6">
           <AlertDescription>
             No services are currently available. Please contact the clinic directly.
@@ -429,7 +399,7 @@ const AppointmentForm = () => {
           <Button 
             type="submit" 
             className="w-full bg-tulip-dark-blue hover:bg-blue-900 text-white"
-            disabled={isSubmitting || !services || services.length === 0}
+            disabled={isSubmitting || services.length === 0}
           >
             {isSubmitting ? "Submitting..." : "Request Appointment"}
           </Button>

@@ -2,7 +2,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { 
-  supabaseClient, 
   signIn, 
   checkStaffRole, 
   DEFAULT_ADMIN_EMAIL, 
@@ -26,18 +25,25 @@ const AdminLogin = () => {
   const [creationSuccess, setCreationSuccess] = useState(false);
   const navigate = useNavigate();
 
-  // Check if the user is already logged in
+  // Check if the user is already logged in (now using localStorage)
   useEffect(() => {
     const checkSession = async () => {
-      const { data, error } = await supabaseClient.auth.getSession();
-      
-      if (data.session) {
-        // Check if user is admin
-        const { role, error: roleError } = await checkStaffRole(data.session.user.id);
-        
-        if (!roleError && role === 'admin') {
-          navigate('/admin');
+      try {
+        const sessionStr = localStorage.getItem('tulip_dental_auth_session');
+        if (sessionStr) {
+          const session = JSON.parse(sessionStr);
+          
+          if (session?.user) {
+            // Check if user is admin
+            const { role, error: roleError } = await checkStaffRole(session.user.id);
+            
+            if (!roleError && role === 'admin') {
+              navigate('/admin');
+            }
+          }
         }
+      } catch (error) {
+        console.error("Error checking session:", error);
       }
     };
     
@@ -113,14 +119,14 @@ const AdminLogin = () => {
       if (roleError) {
         console.error("Role check error:", roleError);
         setErrorMessage("Error verifying staff role: " + roleError.message);
-        await supabaseClient.auth.signOut();
+        localStorage.removeItem('tulip_dental_auth_session');
         return;
       }
 
       if (role !== 'admin') {
         console.error("User is not an admin. Role:", role);
         setErrorMessage("You do not have admin privileges. Your role: " + (role || 'none'));
-        await supabaseClient.auth.signOut();
+        localStorage.removeItem('tulip_dental_auth_session');
         return;
       }
 
