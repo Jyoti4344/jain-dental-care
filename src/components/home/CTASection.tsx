@@ -12,16 +12,20 @@ const CTASection = () => {
             Schedule your appointment today and take the first step toward optimal dental health and a beautiful smile.
           </p>
           <div className="flex flex-col sm:flex-row justify-center space-y-4 sm:space-y-0 sm:space-x-4">
-            <Button asChild size="lg" className="bg-white hover:bg-gray-100 text-tulip-dark-blue font-semibold px-8">
-              <Link to="/appointment">Book Your Visit</Link>
-            </Button>
+          <Button asChild size="lg" className="bg-white hover:bg-blue-900 hover:text-white text-tulip-dark-blue font-semibold px-8">
+            <a href="https://appointment-booking-app-henna.vercel.app" target="_blank" rel="noopener noreferrer">
+              Book your visit
+            </a>
+          </Button>
             <Button asChild variant="outline" size="lg" className="bg-white hover:bg-gray-100 text-tulip-dark-blue font-semibold px-8">
               <Link to="/contact">Contact Us</Link>
             </Button>
           </div>
           <div className="mt-8 opacity-75">
             <Button asChild variant="link" size="sm" className="text-white hover:text-gray-200">
-              <Link to="/admin/login">Staff Login</Link>
+              <a href="https://appointment-booking-app-henna.vercel.app" rel="noopener noreferrer">
+                Staff login
+              </a>
             </Button>
           </div>
         </div>

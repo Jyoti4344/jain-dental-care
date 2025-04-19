@@ -12,13 +12,15 @@ const Hero = () => {
               Your Smile Deserves <br />The Best Care
             </h1>
             <p className="text-lg text-gray-700 mb-8 max-w-lg">
-              At Tulip Dental Clinic, we provide comprehensive dental services with a gentle touch. 
+              At Jain Dental Care Clinic, we provide comprehensive dental services with a gentle touch. 
               Your comfort and dental health are our top priorities.
             </p>
             <div className="flex flex-col sm:flex-row space-y-4 sm:space-y-0 sm:space-x-4">
-              <Button asChild size="lg" className="bg-tulip-dark-blue hover:bg-blue-900 text-white font-semibold px-8">
-                <Link to="/appointment">Book Appointment</Link>
-              </Button>
+            <Button asChild size="lg" className="bg-tulip-dark-blue hover:bg-blue-900 text-white font-semibold px-8">
+              <a href="https://appointment-booking-app-henna.vercel.app" rel="noopener noreferrer">
+                Book Appointment
+              </a>
+            </Button>
               <Button asChild variant="outline" size="lg" className="border-tulip-dark-blue text-tulip-dark-blue hover:bg-tulip-blue/10">
                 <Link to="/services">Our Services</Link>
               </Button>

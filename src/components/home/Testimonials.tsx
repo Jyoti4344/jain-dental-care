@@ -4,18 +4,18 @@ import { QuoteIcon } from "lucide-react";
 
 const testimonialsData = [
   {
-    quote: "After years of dental anxiety, the team at Tulip Dental made me feel completely at ease. Their gentle approach and modern pain management techniques made my root canal surprisingly comfortable!",
-    name: "Sarah Johnson",
+    quote: "After years of dental anxiety, the team at Jain Dental made me feel completely at ease. Their gentle approach and modern pain management techniques made my root canal surprisingly comfortable!",
+    name: "Rishabh Sharma",
     title: "Patient for 2 years"
   },
   {
-    quote: "My entire family sees Dr. Kim at Tulip Dental. Her ability to connect with our kids is amazing - they actually look forward to their dental checkups now, which I never thought possible!",
-    name: "Michael Rodriguez",
+    quote: "My entire family sees Dr. Samarth at Jain Dental. Her ability to connect with our kids is amazing - they actually look forward to their dental checkups now, which I never thought possible!",
+    name: "Tripti Pathi",
     title: "Patient for 3 years"
   },
   {
-    quote: "The cosmetic work I had done at Tulip Dental exceeded my expectations. My smile transformation has given me so much confidence, and the results look completely natural.",
-    name: "Emily Chen",
+    quote: "The cosmetic work I had done at Jain Dental exceeded my expectations. My smile transformation has given me so much confidence, and the results look completely natural.",
+    name: "Tushar Gupta",
     title: "Patient for 1 year"
   }
 ];

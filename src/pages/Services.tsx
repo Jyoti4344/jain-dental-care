@@ -101,11 +101,11 @@ const servicesData = [
     title: "Specialized Care",
     description: "Advanced dental treatments and specialized services to address complex dental issues and enhance your oral health.",
     treatments: [
-      "Sleep Apnea Treatment",
+      "Night Guard",
       "TMJ Therapy",
       "Custom Mouthguards",
       "Oral Surgery",
-      "Sedation Dentistry",
+      "Dental Jewellery",
       "Dental Implants"
     ]
   },

@@ -167,7 +167,7 @@ const Contact = () => {
                     <h3 className="text-2xl font-bold text-tulip-dark-blue mb-6">Find Us</h3>
                     <div className="aspect-w-16 aspect-h-9 h-[300px]">
                     <iframe
-                      src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3511.6697515355595!2d77.32493029999999!3d28.3385943!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x390cdb9919f0c6f5%3A0x965d16bf98888a9b!2sJain%20Garments%20Main%20Market!5e0!3m2!1sen!2sin!4v1744986663465!5m2!1sen!2sin"
+                      src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d28088.330890141842!2d77.28415357521455!3d28.357599104945088!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x390cdb805603bc29%3A0x331ae2423b6440fd!2sDr.%20Chandersain%20Clinic!5e0!3m2!1sen!2sin!4v1745077777033!5m2!1sen!2sin"
                       width="100%"
                       height="100%"
                       style={{ border: 0 }}

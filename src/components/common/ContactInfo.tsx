@@ -11,8 +11,8 @@ const ContactInfo = () => {
           <MapPin size={24} className="text-tulip-dark-blue mr-4 mt-1 flex-shrink-0" />
           <div>
             <h4 className="font-semibold mb-1">Address</h4>
-            <p className="text-gray-700">123 Dental Avenue, Faridabad</p>
-            <p className="text-gray-700">Haryana, India, 121004</p>
+            <p className="text-gray-700">#3311, Near Dr. Chandrasen Wali Gali, Sihi Gate, Bania wara</p>
+            <p className="text-gray-700">Ballabhgarh, Faridabad, 121004</p>
           </div>
         </div>
         
@@ -20,7 +20,7 @@ const ContactInfo = () => {
           <Phone size={24} className="text-tulip-dark-blue mr-4 mt-1 flex-shrink-0" />
           <div>
             <h4 className="font-semibold mb-1">Phone</h4>
-            <p className="text-gray-700">(91)-9956374887</p>
+            <p className="text-gray-700">(91)-9711487748</p>
           </div>
         </div>
         
@@ -28,7 +28,7 @@ const ContactInfo = () => {
           <Mail size={24} className="text-tulip-dark-blue mr-4 mt-1 flex-shrink-0" />
           <div>
             <h4 className="font-semibold mb-1">Email</h4>
-            <p className="text-gray-700">info@tulipdental.com</p>
+            <p className="text-gray-700">samarth.jain459@gmail.com</p>
           </div>
         </div>
         
@@ -36,8 +36,8 @@ const ContactInfo = () => {
           <Clock size={24} className="text-tulip-dark-blue mr-4 mt-1 flex-shrink-0" />
           <div>
             <h4 className="font-semibold mb-1">Hours</h4>
-            <p className="text-gray-700">Monday - Friday: 8:00 AM - 6:00 PM</p>
-            <p className="text-gray-700">Saturday: 9:00 AM - 3:00 PM</p>
+            <p className="text-gray-700">Morning: 10:00 AM - 2:00 PM</p>
+            <p className="text-gray-700">Evening: 5:00 AM - 8:00 PM</p>
             <p className="text-gray-700">Sunday: Closed</p>
           </div>
         </div>
