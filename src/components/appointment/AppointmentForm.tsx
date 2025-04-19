@@ -6,7 +6,7 @@ import { CalendarIcon } from "lucide-react";
 import { format } from "date-fns";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
-import { supabaseClient } from "@/lib/supabase";
+import { supabaseClient, ensureDefaultServices } from "@/lib/supabase";
 import { useQuery } from "@tanstack/react-query";
 
 import { Button } from "@/components/ui/button";
@@ -57,67 +57,31 @@ const formSchema = z.object({
   message: z.string().optional(),
 });
 
-const ensureDefaultServices = async () => {
-  console.log("Checking for default services...");
-  
-  const { count } = await supabaseClient
-    .from('services')
-    .select('*', { count: 'exact', head: true });
-  
-  console.log(`Found ${count} services`);
-  
-  if (!count || count < 1) {
-    console.log("No services found. Adding default services...");
-    
-    const defaultServices = [
-      { 
-        name: "Regular Checkup", 
-        description: "Comprehensive dental examination and consultation", 
-        duration: 30, 
-        price: 50 
-      },
-      { 
-        name: "Teeth Cleaning", 
-        description: "Professional dental cleaning and polishing", 
-        duration: 60, 
-        price: 80 
-      },
-      { 
-        name: "Root Canal", 
-        description: "Treatment for infected tooth pulp", 
-        duration: 90, 
-        price: 200 
-      },
-      { 
-        name: "Tooth Extraction", 
-        description: "Safe removal of damaged or problematic teeth", 
-        duration: 45, 
-        price: 150 
-      }
-    ];
-    
-    const { error } = await supabaseClient
-      .from('services')
-      .insert(defaultServices);
-      
-    if (error) {
-      console.error("Error adding default services:", error);
-    } else {
-      console.log("Default services added successfully");
-    }
-  }
-};
-
 const AppointmentForm = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [availableTimeSlots, setAvailableTimeSlots] = useState<string[]>([]);
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
+  const [servicesFetchAttempted, setServicesFetchAttempted] = useState(false);
 
   useEffect(() => {
-    ensureDefaultServices();
+    const initializeServices = async () => {
+      console.log("Initializing services...");
+      
+      const result = await ensureDefaultServices();
+      
+      if (result.success) {
+        console.log("Services initialization successful:", result.message);
+      } else {
+        console.error("Services initialization failed:", result.error);
+      }
+      
+      setServicesFetchAttempted(true);
+    };
+    
+    initializeServices();
   }, []);
 
-  const { data: services, isLoading: loadingServices, error: servicesError } = useQuery({
+  const { data: services, isLoading: loadingServices, error: servicesError, refetch } = useQuery({
     queryKey: ["services"],
     queryFn: async () => {
       console.log("Fetching services...");
@@ -133,32 +97,25 @@ const AppointmentForm = () => {
         }
         
         console.log("Services fetched:", data);
-        
-        if (!data || data.length === 0) {
-          console.log("No services found. Attempting to add defaults...");
-          await ensureDefaultServices();
-          
-          // Try fetching again
-          const { data: retryData, error: retryError } = await supabaseClient
-            .from("services")
-            .select("id, name, duration, price, description");
-            
-          if (retryError) {
-            console.error("Error in retry fetch:", retryError);
-            throw retryError;
-          }
-          
-          console.log("Retry services fetch result:", retryData);
-          return retryData || [];
-        }
-        
-        return data;
+        return data || [];
       } catch (err) {
         console.error("Unexpected error in service fetch:", err);
         throw err;
       }
     },
+    enabled: servicesFetchAttempted
   });
+
+  useEffect(() => {
+    if (servicesFetchAttempted && (!services || services.length === 0)) {
+      console.log("No services found on first fetch, retrying...");
+      const timer = setTimeout(() => {
+        refetch();
+      }, 2000);
+      
+      return () => clearTimeout(timer);
+    }
+  }, [servicesFetchAttempted, services, refetch]);
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -472,7 +429,7 @@ const AppointmentForm = () => {
           <Button 
             type="submit" 
             className="w-full bg-tulip-dark-blue hover:bg-blue-900 text-white"
-            disabled={isSubmitting}
+            disabled={isSubmitting || !services || services.length === 0}
           >
             {isSubmitting ? "Submitting..." : "Request Appointment"}
           </Button>

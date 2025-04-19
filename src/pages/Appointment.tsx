@@ -4,9 +4,32 @@ import Footer from "@/components/layout/Footer";
 import PageHeader from "@/components/common/PageHeader";
 import AppointmentForm from "@/components/appointment/AppointmentForm";
 import ContactInfo from "@/components/common/ContactInfo";
-import { Phone, Mail, CalendarCheck } from "lucide-react";
+import { Phone, Mail, CalendarCheck, Info } from "lucide-react";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { useState, useEffect } from "react";
+import { supabaseClient, ensureDefaultServices } from "@/lib/supabase";
 
 const Appointment = () => {
+  const [servicesLoading, setServicesLoading] = useState(true);
+  const [servicesError, setServicesError] = useState<string | null>(null);
+
+  useEffect(() => {
+    const initializeServices = async () => {
+      try {
+        const result = await ensureDefaultServices();
+        if (!result.success) {
+          setServicesError("Could not initialize default services. Some features may be limited.");
+        }
+      } catch (error: any) {
+        setServicesError(error.message || "An unexpected error occurred initializing services");
+      } finally {
+        setServicesLoading(false);
+      }
+    };
+    
+    initializeServices();
+  }, []);
+
   return (
     <div className="flex flex-col min-h-screen">
       <Navbar />
@@ -15,6 +38,17 @@ const Appointment = () => {
           title="Book Your Appointment"
           subtitle="Schedule a visit with our dental professionals."
         />
+        
+        {servicesError && (
+          <div className="container mx-auto px-4 mt-4">
+            <Alert variant="destructive">
+              <Info className="h-4 w-4 mr-2" />
+              <AlertDescription>
+                {servicesError}
+              </AlertDescription>
+            </Alert>
+          </div>
+        )}
         
         <section className="py-16 bg-tulip-gray">
           <div className="container mx-auto px-4">

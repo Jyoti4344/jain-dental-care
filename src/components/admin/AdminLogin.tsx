@@ -14,7 +14,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { toast } from 'sonner';
-import { Shield, Lock, Mail, AlertCircle, Info } from 'lucide-react';
+import { Shield, Lock, Mail, AlertCircle, Info, Loader } from 'lucide-react';
 
 const AdminLogin = () => {
   const [email, setEmail] = useState('');
@@ -23,6 +23,7 @@ const AdminLogin = () => {
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [isUsingDefault, setIsUsingDefault] = useState(false);
   const [isCreatingAdmin, setIsCreatingAdmin] = useState(false);
+  const [creationSuccess, setCreationSuccess] = useState(false);
   const navigate = useNavigate();
 
   // Check if the user is already logged in
@@ -54,9 +55,13 @@ const AdminLogin = () => {
     setErrorMessage(null);
     
     try {
+      // Clear any previous success state
+      setCreationSuccess(false);
+      
       const result = await createDefaultAdminIfNeeded();
       
       if (result.success) {
+        setCreationSuccess(true);
         toast.success('Default admin created', {
           description: result.message,
         });
@@ -64,7 +69,7 @@ const AdminLogin = () => {
         // Set the credentials for easy login
         useDefaultCredentials();
       } else {
-        setErrorMessage(`Failed to create default admin: ${result.error?.message}`);
+        setErrorMessage(`Failed to create default admin: ${result.error?.message || 'Unknown error'}`);
         toast.error('Failed to create default admin');
       }
     } catch (err: any) {
@@ -114,7 +119,7 @@ const AdminLogin = () => {
 
       if (role !== 'admin') {
         console.error("User is not an admin. Role:", role);
-        setErrorMessage("You do not have admin privileges. Your role: " + role);
+        setErrorMessage("You do not have admin privileges. Your role: " + (role || 'none'));
         await supabaseClient.auth.signOut();
         return;
       }
@@ -149,6 +154,15 @@ const AdminLogin = () => {
         </Alert>
       )}
       
+      {creationSuccess && (
+        <Alert className="mb-6 bg-green-50 border-green-200">
+          <Info className="h-4 w-4 text-green-500 mr-2" />
+          <AlertDescription className="text-green-700">
+            Default admin created successfully! You can now log in with the default credentials.
+          </AlertDescription>
+        </Alert>
+      )}
+      
       <form onSubmit={handleLogin} className="space-y-4">
         <div>
           <Label htmlFor="email" className="flex items-center gap-2">
@@ -179,8 +193,16 @@ const AdminLogin = () => {
           />
         </div>
         
-        <Button type="submit" className="w-full" disabled={isLoading}>
-          {isLoading ? 'Logging in...' : 'Login'}
+        <Button 
+          type="submit" 
+          className="w-full" 
+          disabled={isLoading}
+        >
+          {isLoading ? (
+            <>
+              <Loader className="mr-2 h-4 w-4 animate-spin" /> Logging in...
+            </>
+          ) : 'Login'}
         </Button>
         
         {!isUsingDefault && (
@@ -201,7 +223,11 @@ const AdminLogin = () => {
           onClick={createDefaultAdmin}
           disabled={isCreatingAdmin}
         >
-          {isCreatingAdmin ? 'Creating Default Admin...' : 'Create Default Admin Account'}
+          {isCreatingAdmin ? (
+            <>
+              <Loader className="mr-2 h-4 w-4 animate-spin" /> Creating Default Admin...
+            </>
+          ) : 'Create Default Admin Account'}
         </Button>
       </form>
       
