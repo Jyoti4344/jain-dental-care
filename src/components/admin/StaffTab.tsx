@@ -13,11 +13,13 @@ import {
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Search, Plus, User } from "lucide-react";
+import StaffForm from "./StaffForm";
 
 const StaffTab = () => {
   const [searchQuery, setSearchQuery] = useState("");
+  const [isAddStaffOpen, setIsAddStaffOpen] = useState(false);
 
-  const { data: staff, isLoading } = useQuery({
+  const { data: staff, isLoading, refetch } = useQuery({
     queryKey: ["staff"],
     queryFn: async () => {
       const { data, error } = await supabaseClient
@@ -57,6 +59,10 @@ const StaffTab = () => {
         return 'bg-gray-100 text-gray-800';
     }
   };
+  
+  const handleAddStaffSuccess = () => {
+    refetch();
+  };
 
   return (
     <div className="space-y-6">
@@ -71,7 +77,7 @@ const StaffTab = () => {
             onChange={(e) => setSearchQuery(e.target.value)}
           />
         </div>
-        <Button>
+        <Button onClick={() => setIsAddStaffOpen(true)}>
           <Plus className="mr-2 h-4 w-4" />
           Add Staff Member
         </Button>
@@ -137,6 +143,12 @@ const StaffTab = () => {
           <p className="text-gray-500">No staff members found.</p>
         </div>
       )}
+      
+      <StaffForm 
+        isOpen={isAddStaffOpen}
+        onClose={() => setIsAddStaffOpen(false)}
+        onSuccess={handleAddStaffSuccess}
+      />
     </div>
   );
 };

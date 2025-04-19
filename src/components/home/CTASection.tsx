@@ -19,6 +19,11 @@ const CTASection = () => {
               <Link to="/contact">Contact Us</Link>
             </Button>
           </div>
+          <div className="mt-8 opacity-75">
+            <Button asChild variant="link" size="sm" className="text-white hover:text-gray-200">
+              <Link to="/admin/login">Staff Login</Link>
+            </Button>
+          </div>
         </div>
       </div>
     </section>
