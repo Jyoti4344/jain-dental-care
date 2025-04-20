@@ -4,17 +4,17 @@ import { QuoteIcon } from "lucide-react";
 
 const testimonialsData = [
   {
-    quote: "After years of dental anxiety, the team at Jain Dental made me feel completely at ease. Their gentle approach and modern pain management techniques made my root canal surprisingly comfortable!",
+    quote: "After years of dental anxiety, the team at Jain Dental Care made me feel completely at ease. Their gentle approach and modern pain management techniques made my root canal surprisingly comfortable!",
     name: "Rishabh Sharma",
     title: "Patient for 2 years"
   },
   {
-    quote: "My entire family sees Dr. Samarth at Jain Dental. Her ability to connect with our kids is amazing - they actually look forward to their dental checkups now, which I never thought possible!",
+    quote: "My entire family sees Dr. Samarth at Jain Dental Care. His ability to connect with our kids is amazing - he actually look forward to their dental checkups now, which I never thought possible!",
     name: "Tripti Pathi",
     title: "Patient for 3 years"
   },
   {
-    quote: "The cosmetic work I had done at Jain Dental exceeded my expectations. My smile transformation has given me so much confidence, and the results look completely natural.",
+    quote: "The cosmetic work I had done at Jain Dental Care exceeded my expectations. My smile transformation has given me so much confidence, and the results look completely natural.",
     name: "Tushar Gupta",
     title: "Patient for 1 year"
   }
