@@ -18,7 +18,7 @@ const About = () => {
       <Navbar />
       <main className="flex-grow">
         <PageHeader 
-          title="About Jain Dental Care Clinic"
+          title="About Jain Dental Care Centre"
           subtitle="Get to know our team and learn about our commitment to excellent dental care."
         />
         
@@ -29,7 +29,7 @@ const About = () => {
               <div className="md:w-1/2 mb-8 md:mb-0 md:pr-12">
                 <h2 className="text-3xl font-bold text-tulip-dark-blue mb-4">Our Story</h2>
                 <p className="text-gray-700 mb-4">
-                  Founded in 2012 by Dr. Samarth Jain, Jain Dental Care Clinic was established with one mission: to provide exceptional dental care in a comfortable, patient-centered environment.
+                  Founded in 2012 by Dr. Samarth Jain, Jain Dental Care Centre was established with one mission: to provide exceptional dental care in a comfortable, patient-centered environment.
                 </p>
                 <p className="text-gray-700 mb-4">
                   What started as a small practice has grown into a trusted dental clinic serving thousands of patients in our community. Our growth is a testament to our dedication to quality care and patient satisfaction.
@@ -55,7 +55,7 @@ const About = () => {
             <div className="text-center mb-12">
               <h2 className="text-3xl font-bold text-tulip-dark-blue mb-4">Our Values</h2>
               <p className="text-lg text-gray-700 max-w-3xl mx-auto">
-                These core principles guide everything we do at Jain Dental Care Clinic.
+                These core principles guide everything we do at Jain Dental Care Centre.
               </p>
             </div>
             
