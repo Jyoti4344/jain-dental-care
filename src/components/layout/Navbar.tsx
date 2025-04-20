@@ -15,7 +15,7 @@ const Navbar = () => {
     <nav className="bg-white py-4 shadow-sm sticky top-0 z-50">
       <div className="container mx-auto px-4 flex justify-between items-center">
         <Link to="/" className="flex items-center">
-          <span className="text-tulip-dark-blue font-nunito font-bold text-2xl">Jain Dental</span>
+          <span className="text-tulip-dark-blue font-nunito font-bold text-2xl">Jain Dental Care Centre</span>
         </Link>
 
         {/* Desktop Menu */}
