@@ -12,7 +12,7 @@ const Hero = () => {
               Your Smile Deserves <br />The Best Care
             </h1>
             <p className="text-lg text-gray-700 mb-8 max-w-lg">
-              At Jain Dental Care Clinic, we provide comprehensive dental services with a gentle touch. 
+              At Jain Dental Care Centre, we provide comprehensive dental services with a gentle touch. 
               Your comfort and dental health are our top priorities.
             </p>
             <div className="flex flex-col sm:flex-row space-y-4 sm:space-y-0 sm:space-x-4">
