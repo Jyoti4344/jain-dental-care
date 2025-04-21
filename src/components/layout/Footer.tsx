@@ -30,11 +30,11 @@ const Footer = () => {
             <div className="space-y-3">
               <div className="flex items-start">
                 <MapPin size={20} className="mr-2 mt-1 flex-shrink-0" />
-                <p>#331, Near Dr. Chandrasen Wali Gali, Ballabhgarh, Faridabad, Haryana, India 121004</p>
+                <p>236, 31, Vishnu Garden, Ward-30, Block-B, Sector-105, Gurugram, Haryana, India 122006</p>
               </div>
               <div className="flex items-center">
                 <Phone size={20} className="mr-2 flex-shrink-0" />
-                <p>(91)-9711487748</p>
+                <p>(91)-8447945913</p>
               </div>
               <div className="flex items-center">
                 <Mail size={20} className="mr-2 flex-shrink-0" />
