@@ -167,7 +167,7 @@ const Contact = () => {
                     <h3 className="text-2xl font-bold text-tulip-dark-blue mb-6">Find Us</h3>
                     <div className="aspect-w-16 aspect-h-9 h-[300px]">
                     <iframe
-                      src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d28088.330890141842!2d77.28415357521455!3d28.357599104945088!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x390cdb805603bc29%3A0x331ae2423b6440fd!2sDr.%20Chandersain%20Clinic!5e0!3m2!1sen!2sin!4v1745077777033!5m2!1sen!2sin"
+                      src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3506.4744441749376!2d77.00887727461138!3d28.495370075739945!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x390d19e2175dd901%3A0xe82b1f29dbd230a3!2sChirag%20Hospital(Multispeciality%20Hospital%20in%20Gurgaon)!5e0!3m2!1sen!2sin!4v1745215030509!5m2!1sen!2sin"
                       width="100%"
                       height="100%"
                       style={{ border: 0 }}
